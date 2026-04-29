@@ -153,7 +153,7 @@ vercel.json                # cron schedule
 ## 상태 / 영속화
 
 - **단일 디바이스**: `sessionStorage` (`hookcut:wizard:v2`) — 새로고침/뒤로가기 복원. 광고 컷 imageUrl 도 함께 저장되어 새로고침 시 재호출 없이 즉시 표시됩니다.
-- **다중 디바이스 / 공유 URL**: KV 통합 (v1.2 예정).
+
 
 ## 알려진 제약
 
