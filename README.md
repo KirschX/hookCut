@@ -101,6 +101,14 @@ pnpm lint     # ESLint
 - implementation: `app/`, `components/`, `hooks/`, `lib/`, `schemas/`, `stores/`
 - refine: 스키마 truncate 정책 (`schemas/ad-proposal.ts`), 시스템 프롬프트 컷 beat 분배 (`lib/ai/prompts.ts`)
 
+### 실제 구현에서의 LLM 활용
+
+- **Vercel AI SDK 기반 호출**: `streamObject` / `generateObject`로 LLM 응답을 zod 스키마(`schemas/*`)에 강제 매핑 — 콘텐츠 분석, 광고안 생성, 단일 광고안 재생성 모두 동일 패턴.
+- **단계 분리된 LLM 파이프라인**: 한 번의 거대한 호출 대신, `analyze` → `generate-ads` → `regenerate-ad` → `cut-image` 4개 라우트로 분리. 각 단계가 독립 스키마와 프롬프트를 가져 사용자가 중간에 방향 조정 가능.
+- **스트리밍 + 부분 검증**: `useObject`로 클라이언트가 부분 객체를 받아 단계별 UI 갱신. 최종 객체는 zod 재검증 후 store 반영.
+- **출력 안정화 처리**: Gemini BPE 토크나이저가 한국어 경계에서 흘리는 U+FFFD 아티팩트를 1차 검증 실패 시 정제 후 재검증 (`hooks/use-generate-ads-stream.ts`).
+- **이미지 생성 분리**: 텍스트 LLM(광고안)과 이미지 모델 호출을 분리. 비율·톤·컷 인덱스를 합성한 컷별 프롬프트를 `app/api/cut-image`에서 처리.
+
 ---
 
 ## 폴더 구조
