@@ -90,8 +90,8 @@ pnpm lint     # ESLint
 
 | 도구 | 활용 단계 | 역할 |
 | --- | --- | --- |
-| **ChatGPT** | specify | 제품 정의·기획서 초안(`docs/plans/contents-to-ad-proposal.md`) 작성, 워크플로우/스토리라인 후보 구조 도출 |
-| **Claude Design** | plan (디자인) | 랜딩·위저드 7개 페이지 프로토타입 디자인, 디자인 토큰(oklch) 1차 정의 |
+| **ChatGPT** | specify | 제품 정의·기획서·디자인 초안(`docs/plans/contents-to-ad-proposal.md`) 작성, 워크플로우/스토리라인 후보 구조 도출 |
+| **Claude Design** | 디자인 초안(`docs/design/*`) | 랜딩·위저드 7개 페이지 프로토타입 디자인, 디자인 토큰(oklch) 1차 정의 |
 | **Claude Code** | plan / implementation / refine | 구현 플랜 분해, Next.js 16 기반 코드 작성, 스키마·레이어 분리 리팩터, 카피·프롬프트 정합성 검증 |
 
 각 단계의 산출물은 다음 위치에 보관되어 있습니다.
