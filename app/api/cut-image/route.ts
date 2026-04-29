@@ -4,8 +4,9 @@ import { CutImageInputSchema } from "@/schemas/cut-image";
 import { composeImagenPrompt } from "@/lib/ai/image-utils";
 import { generateAdImage } from "@/lib/ai/client";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 export async function POST(req: Request) {
   if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
