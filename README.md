@@ -35,8 +35,9 @@ pnpm lint     # ESLint
 | `CRON_SECRET` | 24h orphan blob cleanup cron 인증용 32+자 문자열 | 프로덕션 필수 |
 | `GOOGLE_ANALYSIS_MODEL` | 분석 모델, 기본 `gemini-2.5-flash` | 선택 |
 | `GOOGLE_GENERATE_MODEL` | 광고 생성 모델, 기본 `gemini-2.5-flash` | 선택 |
-| `GOOGLE_IMAGE_MODEL` | 이미지 모델, 기본 `imagen-4.0-fast-generate-001` | 선택 |
 | `NEXT_PUBLIC_APP_URL` | 앱 base URL (메타데이터/OG) | 권장 |
+
+이미지 모델은 환경변수가 아니라 wizard 내 ModelPicker(`imageModelId`)로 선택합니다. 지원 모델: `gemini-3.1-flash-image-preview` (기본), `gemini-3-pro-image-preview`, `gemini-2.5-flash-image`.
 
 ---
 
@@ -49,9 +50,9 @@ pnpm lint     # ESLint
 
 **AI / 데이터**
 
-- Vercel AI SDK v6 — `streamObject` + `experimental_useObject` (analyze, generate-ads), `generateObject` (regenerate-ad), `experimental_generateImage` (cut-image)
+- Vercel AI SDK v6 — `streamObject` + `experimental_useObject` (analyze, generate-ads), `generateObject` (regenerate-ad), `generateText` + `responseModalities: ["IMAGE"]` (cut-image)
 - Google Gemini (`@ai-sdk/google`) — 분석/카피 생성
-- Imagen 4 fast — 컷 이미지 생성 (Vercel Blob 영구 저장 + 24h TTL cleanup)
+- Gemini 3.1 flash image preview (기본) 외 Gemini 3 pro image preview / 2.5 flash image — 컷 이미지 생성 (Vercel Blob 영구 저장 + 24h TTL cleanup)
 - Zod 4 — 입력/출력 스키마 (Gemini structured output 제약 반영)
 
 **상태 / 데이터 페칭**
@@ -62,7 +63,8 @@ pnpm lint     # ESLint
 
 **런타임 / 인프라**
 
-- Vercel Edge Runtime — `/api/analyze`, `/api/generate-ads`, `/api/regenerate-ad`, `/api/cut-image`
+- Vercel Edge Runtime — `/api/analyze`, `/api/cron/cleanup-blobs`, `/api/session/[id]`
+- Vercel Node.js Runtime (maxDuration 300s) — `/api/generate-ads`, `/api/regenerate-ad`, `/api/cut-image`
 - Vercel Blob — 컷 이미지 저장
 - Vercel Cron — 24h orphan blob cleanup
 - Vercel Analytics + Speed Insights
@@ -122,12 +124,12 @@ app/
     layout.tsx             # QueryProvider + hydrate
     page.tsx               # ?step= router
   api/
-    analyze/route.ts                # streamObject (Gemini)
-    generate-ads/route.ts           # streamObject (Gemini)
-    regenerate-ad/route.ts          # generateObject (Gemini)
-    cut-image/route.ts              # experimental_generateImage + Blob put
-    cron/cleanup-blobs/route.ts     # 24h orphan TTL
-    session/[id]/route.ts           # KV (v1.2 예정)
+    analyze/route.ts                # streamObject (Gemini, edge)
+    generate-ads/route.ts           # streamObject (Gemini, nodejs)
+    regenerate-ad/route.ts          # generateObject (Gemini, nodejs)
+    cut-image/route.ts              # generateText IMAGE modality + Blob put (nodejs)
+    cron/cleanup-blobs/route.ts     # 24h orphan TTL (edge)
+    session/[id]/route.ts           # KV (optional, KV env 미설정 시 비활성)
 
 components/
   query/provider.tsx       # QueryClientProvider + Devtools
@@ -142,11 +144,10 @@ hooks/
   use-cut-image.ts         # useMutation + 캐시 키
 
 lib/
-  ai/                      # client, prompts, image-utils (mapRatio)
+  ai/                      # client, prompts, image-utils
   api/                     # errors, client (fetchJson), cut-image, regenerate-ad
   query/                   # client, keys
-  ads/mock-builder.ts      # mock 광고 빌더 (개발용)
-  kv.ts                    # KV stub (v1.2)
+  kv.ts                    # KV helper (optional)
   utils.ts
 
 schemas/                   # zod (analysis, targeting, format, ad-proposal, cut-image, wizard, regenerate)
